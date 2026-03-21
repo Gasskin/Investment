@@ -1,0 +1,73 @@
+# 定时拉取 TuShare 快照 → 构建 Vite 静态站 → 部署 GitHub Pages
+# 使用前请在仓库 Settings → Secrets → Actions 添加 TUSHARE_TOKEN
+# Settings → Pages → Build and deployment → Source 选「GitHub Actions」
+
+name: Deploy Pages
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "web/**"
+      - "scripts/**"
+      - "zhishu.py"
+      - "etfPool.py"
+      - "package.json"
+      - "vite.config.js"
+      - "requirements.txt"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+  schedule:
+    # 每天 02:15 UTC（北京时间约 10:15）；可按需改成 cron
+    - cron: "15 2 * * *"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Python deps
+        run: pip install -r requirements.txt
+
+      - name: Build market snapshot
+        continue-on-error: true
+        env:
+          TUSHARE_TOKEN: ${{ secrets.TUSHARE_TOKEN }}
+        run: python scripts/build_snapshot.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

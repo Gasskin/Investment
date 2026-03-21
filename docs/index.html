@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="指数 MA120 偏离、ETF 上月涨跌幅" />
+    <title>行情看板</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+SC:wght@400;500;600&family=JetBrains+Mono:wght@450&display=swap"
+      rel="stylesheet"
+    />
+    <script type="module" crossorigin src="./assets/index-cU6kxTHh.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-Bo1NhV9o.css">
+  </head>
+  <body>
+    <div class="page">
+      <header class="top">
+        <h1 class="title">行情看板</h1>
+        <p class="meta" id="meta">加载中…</p>
+        <p class="meta meta-sub" id="meta-bar" hidden></p>
+      </header>
+
+      <section class="block" aria-labelledby="h-indices">
+        <h2 id="h-indices" class="h2">三大指数</h2>
+        <p class="hint">收盘、MA120、偏离度 = (收盘 ÷ MA120 − 1) × 100%</p>
+        <div class="scroll">
+          <table class="tbl" id="tbl-indices">
+            <thead>
+              <tr>
+                <th>指数</th>
+                <th class="num">收盘</th>
+                <th class="num">MA120</th>
+                <th class="num">偏离度 %</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="block" aria-labelledby="h-etf">
+        <h2 id="h-etf" class="h2">ETF 池</h2>
+        <p class="hint" id="etf-sub">上一自然月月 K（前复权），按上月涨跌幅从高到低排序</p>
+        <div class="scroll">
+          <table class="tbl" id="tbl-etfs">
+            <thead>
+              <tr>
+                <th>代码</th>
+                <th>名称</th>
+                <th>ts_code</th>
+                <th class="num">开盘</th>
+                <th class="num">收盘</th>
+                <th class="num">上月涨跌幅 %</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <p class="err" id="err" hidden></p>
+    </div>
+  </body>
+</html>
