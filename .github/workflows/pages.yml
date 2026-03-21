@@ -18,8 +18,8 @@ on:
       - ".github/workflows/pages.yml"
   workflow_dispatch:
   schedule:
-    # 每天 02:15 UTC（北京时间约 10:15）；可按需改成 cron
-    - cron: "15 2 * * *"
+    # GitHub cron 为 UTC。北京时间 08:00 = UTC 当日 00:00
+    - cron: "0 0 * * *"
 
 permissions:
   contents: read

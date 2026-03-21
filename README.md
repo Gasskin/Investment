@@ -56,7 +56,7 @@ python etfPool.py   # 指定 ETF 池：上一自然月月 K（前复权）及月
   - 仓库 **Settings → Secrets and variables → Actions** 新建 **`TUSHARE_TOKEN`**（值同 TuShare Pro token，勿写入代码）。
   - **Settings → Pages → Build and deployment**：**Source** 选 **GitHub Actions**（不要与「从分支部署 /docs」混用）。
   - 工作流：`pip install -r requirements.txt` → `python scripts/build_snapshot.py`（写入 `web/public/snapshot.json`）→ `npm ci` && `npm run build` → 上传 `docs/` 并发布。
-  - **schedule**：默认每天 02:15 UTC，可在 workflow 里改 `cron`；另支持 `push` 到 `main`/`master`（限定路径）与 **workflow_dispatch** 手动运行。
+  - **schedule**：默认每天 **北京时间 08:00**（workflow 内为 UTC `0 0 * * *`）；可在 `.github/workflows/pages.yml` 修改 `cron`；另支持 `push` 与 **workflow_dispatch** 手动运行。
   - 快照步骤带 **`continue-on-error: true`**：未配 Secret 时仍会尝试构建静态页（页面会提示缺 token）；配好 Secret 后即可正常拉数。
 - **仅手动发布**：本机执行 `python scripts/build_snapshot.py`（需 token）后 `npm run build`，将 `docs/` 推送到仓库，Pages 选分支 + 文件夹 **`/docs`**。
 - 线上页面通过 `snapshot.json` 展示行情表；**json 内无 token**，仅含行情字段。
