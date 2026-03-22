@@ -84,7 +84,7 @@ def main() -> int:
     except Exception as e:
         index_errors.append(f"上证指数: {e}")
 
-    for name, code in [("恒生指数", "HSI"), ("标普500", "SPX")]:
+    for name, code in [("恒生指数", "HSI"), ("标普500", "SPX"), ("日经225", "N225")]:
         try:
             df = zhishu.fetch_global_daily(pro, code, start_date)
             t, close, ma120 = zhishu.latest_close_and_ma120_rolling(df)
@@ -127,7 +127,7 @@ def main() -> int:
 
     etf_rows.sort(key=lambda r: r["pct_chg"], reverse=True)
 
-    ok = not index_errors and not etf_errors and len(indices) == 3 and len(etf_rows) == len(
+    ok = not index_errors and not etf_errors and len(indices) == 4 and len(etf_rows) == len(
         etfPool.ETF_POOL
     )
 

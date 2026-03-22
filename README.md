@@ -27,7 +27,7 @@
 ### 指数脚本 `zhishu.py`
 
 - **上证**：`ts.pro_bar(asset='I', freq='D', ma=[120])`，底层为 `index_daily`；MA120 使用 SDK 对收盘的均线计算。  
-- **恒生、标普**：`pro_bar` **未**接入 `index_global`，使用 **`pro.index_global`**（代码 `HSI`、`SPX`，与[官方国际指数表](https://tushare.pro/document/2?doc_id=211)一致）；MA120 对返回日线做 rolling。  
+- **恒生、标普、日经225**：`pro_bar` **未**接入 `index_global`，使用 **`pro.index_global`**（如 `HSI`、`SPX`、`N225`，见[官方国际指数表](https://tushare.pro/document/2?doc_id=211)）；MA120 对返回日线做 rolling。  
 - **权限**：`index_global` 通常需较高积分（文档常见为约 **6000+**）；`index_daily` 约 **2000+**（以 TuShare 官网为准）。
 
 ### ETF 脚本 `etfPool.py`
@@ -45,7 +45,7 @@
 
 ```bash
 pip install tushare pandas
-python zhishu.py    # 上证 / 恒生 / 标普：最新收盘与 MA120
+python zhishu.py    # 上证、恒生、标普、日经225：最新收盘与 MA120
 python etfPool.py   # 指定 ETF 池：上一自然月月 K（前复权）及月涨跌幅
 ```
 
@@ -65,8 +65,8 @@ python etfPool.py   # 指定 ETF 池：上一自然月月 K（前复权）及月
 
 | 脚本        | 作用 |
 |-------------|------|
-| `zhishu.py` | 上证指数、恒生指数、标普500：最新价与 MA120 |
-| `etfPool.py` | ETF：`159941`、`513500`、`513010`、`513630`、`159530`、`159929`（`ts_code` 分别为 `.SZ` / `.SH`） |
+| `zhishu.py` | 上证指数、恒生、标普500、日经225：最新价与 MA120 |
+| `etfPool.py` | ETF：`159941`、`513500`、`513010`、`513630`、`513000`、`159530`、`159929`（`ts_code` 为 `.SZ` / `.SH`） |
 | `scripts/build_snapshot.py` | 聚合上述逻辑，生成 `web/public/snapshot.json` 供静态页展示（CI / 本机均可） |
 
 ---

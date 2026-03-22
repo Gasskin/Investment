@@ -36,7 +36,7 @@ function fmtYmd8(s) {
   return `${x.slice(0, 4)}-${x.slice(4, 6)}-${x.slice(6, 8)}`;
 }
 
-/** 三指数 trade_date（多为 YYYYMMDD）中取最晚一天 */
+/** 各指数 trade_date（多为 YYYYMMDD）中取最晚一天 */
 function latestIndexTradeDate(indices) {
   const raw = (indices || []).map((r) => String(r.trade_date ?? "").replace(/\D/g, ""));
   const ok = raw.filter((d) => d.length === 8);

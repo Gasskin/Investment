@@ -9,12 +9,12 @@
 【实现上约定 / 踩坑结论】
 Token读取顺序（zhishu.py、etfPool.py的resolve_token）：环境变量TUSHARE_TOKEN或TS_TOKEN → 本文件首条非空行「说明|token」取竖线右侧 → 用户目录tk.csv（ts.set_token）。勿将含token的本文件提交公开仓库。
 
-zhishu.py：上证用ts.pro_bar(asset=I,freq=D,ma=[120])，底层index_daily；恒生/标普用pro.index_global（HSI、SPX，见官网国际指数表），因pro_bar未接index_global；MA120对全球指数日线做rolling。index_global常见需约6000+积分，index_daily约2000+，以官网为准。
+zhishu.py：上证用ts.pro_bar(asset=I,freq=D,ma=[120])，底层index_daily；恒生/标普/日经225用pro.index_global（HSI、SPX、N225，见官网国际指数表），因pro_bar未接index_global；MA120对全球指数日线做rolling。index_global常见需约6000+积分，index_daily约2000+，以官网为准。
 
 etfPool.py：ETF用fund_daily+fund_adj做前复权后合成上一自然月月K；fund_daily/fund_adj常见5000+积分。详见同目录README.md。
 
 运行：pip install tushare pandas；python zhishu.py；python etfPool.py。
 
-ETF池：159941、513500、513010、513630、159530、159929（159*.SZ，513*.SH）。
+ETF池：159941、513500、513010、513630、513000、159530、159929（159*.SZ，513*.SH）。
 
 参考：readme_api.txt；https://tushare.pro/document/2

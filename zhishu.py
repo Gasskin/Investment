@@ -1,9 +1,9 @@
 """
-查询上证指数、恒生指数、标普500的最新收盘价及 MA120。
+查询上证指数、恒生指数、标普500、日经225 的最新收盘价及 MA120。
 
 - 上证指数：官方通用行情 ts.pro_bar(asset='I')，底层等同 index_daily；MA120 通过 ma=[120]
   由 SDK 按文档「动态计算」（与直接调 index_daily 再 rolling 等价）。
-- 恒生、标普：pro_bar 未接入 index_global（仅沪深指数走 asset='I'），故仍用 pro.index_global。
+- 恒生、标普、日经225：pro_bar 未接入 index_global（仅沪深指数走 asset='I'），故仍用 pro.index_global（国际指数代码见官网，如 HSI、SPX、N225）。
 
 Token 读取顺序（无需必须设环境变量）：
 1) 环境变量 TUSHARE_TOKEN 或 TS_TOKEN（若已设则优先）
@@ -157,7 +157,7 @@ def main() -> int:
         print(f"[失败] 上证指数: {e}", file=sys.stderr)
         return 1
 
-    for name, code in [("恒生指数", "HSI"), ("标普500", "SPX")]:
+    for name, code in [("恒生指数", "HSI"), ("标普500", "SPX"), ("日经225", "N225")]:
         try:
             df = fetch_global_daily(pro, code, start_date)
             t, close, ma120 = latest_close_and_ma120_rolling(df)
