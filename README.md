@@ -2,7 +2,7 @@
 
 ## 你必须遵守的规则（项目约定）
 
-以下为对实现的**硬性要求**，与 `readme.txt` 中第 1、2 条一致：
+以下为对实现的**硬性要求**，与 `readme.txt` 中第 1、2 条一致（若仓库中保留该文件）：
 
 1. **数据源**  
    只允许通过 **TuShare Pro 提供的 API** 获取数据。若 TuShare **没有**对应能力的接口（或接口对某类标的不可用），须**明确报错或说明原因**，不得用其他数据源凑数。
@@ -16,37 +16,32 @@
    涉及**需要复权**的证券行情时，采用**前复权（qfq）**。  
    **注意**：主要指数的 `index_daily` / `index_global` 为**指数点位**，不适用股票/ETF 的 qfq/hfq 概念。
 
+4. **网页看板与回测脚本的依赖（架构边界）**  
+   - **网页看板相关脚本**（如生成 `snapshot.json` 的拉数脚本、`web/` 前端构建所依赖的 Python 等）**不得**依赖任何**回测**相关脚本。  
+   - **回测脚本之间不得互相依赖**：每种回测策略/实验对应**独立**可运行的脚本（或独立入口），**禁止** A 回测 import B 回测的业务逻辑。  
+   - **允许**将重复逻辑抽到**通用工具或基类**（例如公共的数据加载、时间对齐、绩效指标计算等），由看板脚本与各回测脚本分别按需引用；通用层本身不应绑定某一回测或看板的专属业务。
+
 ## 实现上的约定（实践中发现应这样做）
 
-### Token
+### Token（`scripts/build_snapshot.py`）
 
-- `zhishu.py`、`etfPool.py` 通过 `resolve_token()` 按顺序读取：  
-  环境变量 `TUSHARE_TOKEN` 或 `TS_TOKEN` → 与本脚本同目录的 **`readme.txt`**（首条非空行，支持 `说明|token`，取竖线右侧）→ 用户目录下 TuShare 默认 **`tk.csv`**（`ts.set_token` 写入）。
-- **不要把含 token 的 `readme.txt` 提交到公开仓库**；更稳妥是使用 `ts.set_token` 或仅本地环境变量。
+- `resolve_token()` 按顺序读取：环境变量 `TUSHARE_TOKEN` 或 `TS_TOKEN` → 仓库根目录 **`readme.txt`**（首条非空行，支持 `说明|token`，取竖线右侧）→ 用户目录下 TuShare 默认 **`tk.csv`**（`ts.set_token` 写入）。
+- **不要把含 token 的文件提交到公开仓库**；CI 使用仓库 Secret **`TUSHARE_TOKEN`**，本机优先环境变量。
 
-### 指数脚本 `zhishu.py`
+### 指数与 ETF（快照脚本内实现）
 
-- **上证**：`ts.pro_bar(asset='I', freq='D', ma=[120])`，底层为 `index_daily`；MA120 使用 SDK 对收盘的均线计算。  
-- **恒生、标普、日经225**：`pro_bar` **未**接入 `index_global`，使用 **`pro.index_global`**（如 `HSI`、`SPX`、`N225`，见[官方国际指数表](https://tushare.pro/document/2?doc_id=211)）；MA120 对返回日线做 rolling。  
-- **权限**：`index_global` 通常需较高积分（文档常见为约 **6000+**）；`index_daily` 约 **2000+**（以 TuShare 官网为准）。
-
-### ETF 脚本 `etfPool.py`
-
-- **现象**：`pro.monthly` 对场内 ETF 常返回**空表**；`pro_bar(..., adj='qfq')` 依赖 **`adj_factor`**，ETF 无此数据时 SDK 会直接 **`return None`**。ETF 复权应使用 **`fund_adj`**。  
-- **做法**：用官方 **`fund_daily`** + **`fund_adj`** 做前复权后，按**自然月**合成「上一自然月」月 K（首交易日开盘、末交易日收盘、月内高低），月涨跌幅相对**再上一月**末复权收盘计算。  
-- **权限**：`fund_daily` / `fund_adj` 常见为 **5000+** 积分（见 `readme_api.txt` 与官网）。
+- **指数（上证、恒生、标普500）**：上证用 `ts.pro_bar(asset='I', freq='D', ma=[120])`；国际指数用 **`pro.index_global`**（`HSI`、`SPX`）；权限以 TuShare 官网为准。  
+- **ETF 池**：`fund_daily` + `fund_adj` 前复权后按自然月合成上一月月 K，涨跌幅相对再上一月末收盘；列表见 `scripts/build_snapshot.py` 中 `ETF_POOL`。
 
 ### 参考文档
 
-- 项目内 **`readme_api.txt`**：常用接口速查与积分档摘要。  
 - TuShare 官方：<https://tushare.pro/document/2>
 
 ## 运行
 
 ```bash
-pip install tushare pandas
-python zhishu.py    # 上证、恒生、标普、日经225：最新收盘与 MA120
-python etfPool.py   # 指定 ETF 池：上一自然月月 K（前复权）及月涨跌幅
+pip install -r requirements.txt
+python scripts/build_snapshot.py   # 生成 web/public/snapshot.json
 ```
 
 ## 可视化说明页（GitHub Pages）
@@ -60,14 +55,13 @@ python etfPool.py   # 指定 ETF 池：上一自然月月 K（前复权）及月
   - 快照步骤带 **`continue-on-error: true`**：未配 Secret 时仍会尝试构建静态页（页面会提示缺 token）；配好 Secret 后即可正常拉数。
 - **仅手动发布**：本机执行 `python scripts/build_snapshot.py`（需 token）后 `npm run build`，将 `docs/` 推送到仓库，Pages 选分支 + 文件夹 **`/docs`**。
 - 线上页面通过 `snapshot.json` 展示行情表；**json 内无 token**，仅含行情字段。
+- **更新 `snapshot.json`**：纯静态托管下浏览器无法直连 TuShare；新数据依赖 **Actions 定时/手动**（`workflow_dispatch`）或本机执行 `python scripts/build_snapshot.py` 后 `npm run build` 再推送。
 
 ## 脚本与标的列表
 
-| 脚本        | 作用 |
-|-------------|------|
-| `zhishu.py` | 上证指数、恒生、标普500、日经225：最新价与 MA120 |
-| `etfPool.py` | ETF：`159941`、`513500`、`513010`、`513630`、`513000`、`159530`、`159929`（`ts_code` 为 `.SZ` / `.SH`） |
-| `scripts/build_snapshot.py` | 聚合上述逻辑，生成 `web/public/snapshot.json` 供静态页展示（CI / 本机均可） |
+| 脚本 | 作用 |
+|------|------|
+| `scripts/build_snapshot.py` | 拉取指数 MA120、ETF 上月月 K，生成 `web/public/snapshot.json` 供看板展示（CI / 本机均可） |
 
 ---
 

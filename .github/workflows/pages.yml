@@ -10,8 +10,6 @@ on:
     paths:
       - "web/**"
       - "scripts/**"
-      - "zhishu.py"
-      - "etfPool.py"
       - "package.json"
       - "vite.config.js"
       - "requirements.txt"
