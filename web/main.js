@@ -1,8 +1,5 @@
 import "./style.css";
 
-const ETF_SUB_DEFAULT =
-  "上一自然月月 K（前复权），按上月涨跌幅从高到低排序";
-
 function escapeHtml(s) {
   return String(s)
     .replace(/&/g, "&amp;")
@@ -64,13 +61,11 @@ function getRefs() {
     metaBar: document.getElementById("meta-bar"),
     errEl: document.getElementById("err"),
     tblI: document.querySelector("#tbl-indices tbody"),
-    tblE: document.querySelector("#tbl-etfs tbody"),
-    etfSub: document.getElementById("etf-sub"),
   };
 }
 
 function renderSnapshot(data, refs) {
-  const { meta, metaBar, errEl, tblI, tblE, etfSub } = refs;
+  const { meta, metaBar, errEl, tblI } = refs;
 
   if (data.generated_at) {
     meta.textContent = `快照生成（北京时间）：${data.generated_at}`;
@@ -101,39 +96,19 @@ function renderSnapshot(data, refs) {
   tblI.innerHTML = (data.indices || [])
     .map(
       (r) =>
-        `<tr><td>${escapeHtml(r.name)}</td><td class="num">${fmtNum(r.close)}</td><td class="num">${fmtNum(r.ma120)}</td><td class="num">${fmtTargetThreshold(r.ma120)}</td><td class="num">${fmtDevPct(r.close, r.ma120)}</td></tr>`,
+        `<tr><td>${escapeHtml(r.name)}</td><td class="num">${fmtNum(r.close)}</td><td class="num">${fmtNum(r.ma120)}</td><td class="num">${fmtDevPct(r.close, r.ma120)}</td><td class="num">${fmtTargetThreshold(r.ma120)}</td></tr>`,
     )
-    .join("");
-
-  const ep = data.etfs || {};
-  if (ep.period_label) {
-    etfSub.textContent = `自然月 ${ep.period_label}${ep.range ? `（${ep.range}）` : ""} · 前复权 · 按涨跌幅降序`;
-  } else {
-    etfSub.textContent = ETF_SUB_DEFAULT;
-  }
-
-  const rows = [...(ep.rows || [])].sort(
-    (a, b) => Number(b.pct_chg) - Number(a.pct_chg),
-  );
-
-  tblE.innerHTML = rows
-    .map((r) => {
-      const cn = r.csname ? escapeHtml(r.csname) : "—";
-      return `<tr><td>${escapeHtml(r.short)}</td><td>${cn}</td><td class="mono">${escapeHtml(r.ts_code)}</td><td class="num">${fmtNum(r.open)}</td><td class="num">${fmtNum(r.close)}</td><td class="num">${fmtNum(r.pct_chg)}</td></tr>`;
-    })
     .join("");
 }
 
 function showFetchError(refs) {
-  const { meta, metaBar, errEl, tblI, tblE, etfSub } = refs;
+  const { meta, metaBar, errEl, tblI } = refs;
   if (metaBar) metaBar.hidden = true;
   meta.textContent = "无 snapshot.json";
   errEl.textContent =
     "请运行：python scripts/build_snapshot.py，再 npm run dev / npm run build。";
   errEl.hidden = false;
   tblI.innerHTML = "";
-  tblE.innerHTML = "";
-  etfSub.textContent = ETF_SUB_DEFAULT;
 }
 
 async function main() {
